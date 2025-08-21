@@ -1,4 +1,4 @@
-package com.finflytest
+package com.finfly
 
 import android.app.Application
 import com.facebook.react.PackageList
