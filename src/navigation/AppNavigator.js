@@ -1,16 +1,24 @@
 // AppNavigator.js
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+// Screens
 import DashboardScreen from '../screens/DashboardScreen';
 import WithdrawScreen from '../screens/WithdrawScreen';
 import DepositScreen from '../screens/DepositScreen';
 import TransferScreen from '../screens/TransferScreen';
 import TransactionEdit from '../screens/TransactionEdit';
-import AppLayout from '../components/layout/AppLayout';
-import AboutScreen from '../screens/AboutScreen'; // 
-import SplashScreen from '../screens/SplashScreen'; // 
-import LoginScreen from '../screens/LoginScreen'; // 
+import AboutScreen from '../screens/AboutScreen';
+import SplashScreen from '../screens/SplashScreen';
+import LoginScreen from '../screens/LoginScreen';
+import AccountDetailScreen from '../screens/AccountDetailScreen';
+import AddAssetScreen from '../screens/AddAssetScreen';
+import AssetsScreen from '../screens/AssetsScreen';
+import LiabilitiesScreen from '../screens/LiabilitiesScreen';
+import ReportScreen from '../screens/ReportScreen';
 
+// Layout
+import AppLayout from '../components/layout/AppLayout';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,11 +26,25 @@ export default function AppNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerBackTitleVisible: false, // cleaner look
-        headerTintColor: '#000', // back arrow color (change if dark mode)
+        headerBackTitleVisible: false,
+        headerTintColor: '#000',
       }}
     >
-      {/* Dashboard - No Back Button */}
+      {/* Splash */}
+      <Stack.Screen
+        name="Splash"
+        component={SplashScreen}
+        options={{ headerShown: false }}
+      />
+
+      {/* Login */}
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+
+      {/* Dashboard */}
       <Stack.Screen
         name="Dashboard"
         options={{ headerShown: false }}
@@ -34,9 +56,40 @@ export default function AppNavigator() {
         )}
       </Stack.Screen>
 
-       <Stack.Screen name="Splash" component={SplashScreen} />
-        <Stack.Screen name="About" component={AboutScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
+      {/* About */}
+      <Stack.Screen name="About" component={AboutScreen} />
+      <Stack.Screen
+  name="Report"
+  options={{ headerShown: false }}
+>
+  {() => (
+    <AppLayout>
+      <ReportScreen />
+    </AppLayout>
+  )}
+</Stack.Screen>
+
+      {/* Accounts */}
+      <Stack.Screen
+        name="AccountDetail"
+        component={AccountDetailScreen}
+        options={{ title: 'Account Details' }}
+      />
+      <Stack.Screen
+        name="Assets"
+        component={AssetsScreen}
+        options={{  headerShown: false }}
+      />
+      <Stack.Screen
+        name="AddAsset"
+        component={AddAssetScreen}
+        options={{ title: 'Add Asset' }}
+      />
+      <Stack.Screen
+        name="Liabilities"
+        component={LiabilitiesScreen}
+        options={{ headerShown: false }}
+      />
 
       {/* Transfer */}
       <Stack.Screen

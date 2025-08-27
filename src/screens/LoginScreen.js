@@ -1,3 +1,4 @@
+// LoginScreen.js
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -34,7 +35,10 @@ const LoginScreen = ({ navigation }) => {
           }
         });
         if (res.ok) {
-          navigation.replace('DashboardScreen');
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Dashboard' }], // ✅ must match AppNavigator
+          });
           return;
         }
       }
@@ -51,11 +55,11 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     if (!host?.trim() || !token?.trim()) {
-  Alert.alert('Missing Fields', 'Please enter both Host URL and PAT');
-  return;
-}
+      Alert.alert('Missing Fields', 'Please enter both Host URL and PAT');
+      return;
+    }
 
-const normalizedHost = host.trim().replace(/\/+$/, '');
+    const normalizedHost = host.trim().replace(/\/+$/, '');
 
     try {
       const res = await fetch(`${normalizedHost}/api/v1/about`, {
@@ -72,7 +76,10 @@ const normalizedHost = host.trim().replace(/\/+$/, '');
       }
 
       await saveCredentials(normalizedHost, token);
-      navigation.replace('Dashboard');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Dashboard' }], // ✅ must match AppNavigator
+      });
     } catch (error) {
       console.log('Login error:', error.message);
       Alert.alert('Login Failed', error.message);
