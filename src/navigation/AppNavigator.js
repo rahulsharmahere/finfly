@@ -16,6 +16,7 @@ import AddAssetScreen from '../screens/AddAssetScreen';
 import AssetsScreen from '../screens/AssetsScreen';
 import LiabilitiesScreen from '../screens/LiabilitiesScreen';
 import ReportScreen from '../screens/ReportScreen';
+import ReportResultScreen from '../screens/ReportResultScreen'; // NEW
 
 // Layout
 import AppLayout from '../components/layout/AppLayout';
@@ -58,16 +59,32 @@ export default function AppNavigator() {
 
       {/* About */}
       <Stack.Screen name="About" component={AboutScreen} />
+
+      {/* Report Input */}
       <Stack.Screen
-  name="Report"
+        name="Report"
+        options={{ headerShown: false }}
+      >
+        {() => (
+          <AppLayout>
+            <ReportScreen />
+          </AppLayout>
+        )}
+      </Stack.Screen>
+
+      {/* Report Results */}
+      <Stack.Screen
+  name="ReportResultScreen"
   options={{ headerShown: false }}
 >
-  {() => (
+  {({ navigation, route }) => (
     <AppLayout>
-      <ReportScreen />
+      <ReportResultScreen navigation={navigation} route={route} />
     </AppLayout>
   )}
 </Stack.Screen>
+
+
 
       {/* Accounts */}
       <Stack.Screen
@@ -78,7 +95,7 @@ export default function AppNavigator() {
       <Stack.Screen
         name="Assets"
         component={AssetsScreen}
-        options={{  headerShown: false }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="AddAsset"
@@ -130,7 +147,7 @@ export default function AppNavigator() {
       {/* Transaction Edit */}
       <Stack.Screen
         name="TransactionEdit"
-        options={{ title: 'Edit Transaction', headerShown: true }}
+        options={{ title: 'Edit Transaction', headerShown: false }}
       >
         {() => (
           <AppLayout>
