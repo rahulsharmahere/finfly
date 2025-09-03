@@ -1,97 +1,153 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+\# 📱 FinFly – Firefly III Mobile Client
 
-# Getting Started
+FinFly is a modern \*\*React Native mobile application\*\* for \[Firefly III\](https://www.firefly-iii.org/), the self-hosted personal finance manager.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+It brings your Firefly III finances to your Android/iOS device with a clean, widget-style dashboard, charts, and fast transaction entry.
 
-## Step 1: Start Metro
+\---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+\## ✨ Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+\- 🔑 Secure login with \*\*Personal Access Token (PAT)\*\* + encrypted storage
 
-```sh
-# Using npm
-npm start
+\- 📊 Dashboard with:
 
-# OR using Yarn
-yarn start
-```
+\- Debit vs Credit bar chart
 
-## Step 2: Build and run your app
+\- Category-wise expenses (pie chart)
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+\- Income vs Expense over time (line chart)
 
-### Android
+\- Net Worth, Budgets, Account Balances, and Upcoming Bills widgets
 
-```sh
-# Using npm
-npm run android
+\- 📜 Latest transactions list (last 10)
 
-# OR using Yarn
-yarn android
-```
+\- 📅 Date filters (1d, 30d, 90d, YTD, Custom) with custom range picker
 
-### iOS
+\- 🎨 Light/Dark theme toggle
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+\- ➕ Animated Floating Action Button (FAB) to quickly add \*\*Withdraw, Deposit, Transfer\*\*
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+\- 📂 Reusable card-based UI components
 
-```sh
-bundle install
-```
+\- 🔐 Credentials stored securely with EncryptedStorage
 
-Then, and every time you update your native dependencies, run:
+\- 🌐 Works with any Firefly III instance (self-hosted or remote)
 
-```sh
-bundle exec pod install
-```
+\---
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+\## 🚀 Getting Started
 
-```sh
-# Using npm
-npm run ios
+\### 1. Clone the repository
 
-# OR using Yarn
-yarn ios
-```
+\`\`\`bash
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+git clone https://github.com/yourusername/finfly.git
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+cd finfly
 
-## Step 3: Modify your app
+2\. Install dependencies
 
-Now that you have successfully run the app, let's make changes!
+npm install --legacy-peer-deps
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+3\. Configure Firefly III
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+Open the app and enter your Firefly III host URL and Personal Access Token (PAT).
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+These will be securely saved for auto-login.
 
-## Congratulations! :tada:
+📱 Running the App
 
-You've successfully run and modified your React Native App. :partying_face:
+On Android (Windows / Linux / Mac)
 
-### Now what?
+Start Metro bundler:
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+npx react-native start
 
-# Troubleshooting
+In another terminal, run the Android build:
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+npx react-native run-android
 
-# Learn More
+The app should open automatically on your Android emulator or connected device.
 
-To learn more about React Native, take a look at the following resources:
+⚠️ Note: I develop on Windows so only the Android build is tested and generated here.
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+On iOS (Mac only)
+
+Since I don’t have a Mac, I cannot generate the iOS build myself.
+
+If you are on macOS, you can build it by following these steps:
+
+Install Xcode
+
+.
+
+Install pods:
+
+cd ios
+
+pod install
+
+cd ..
+
+Run on iOS simulator:
+
+npx react-native run-ios
+
+To generate an iOS archive:
+
+Open ios/FinFly.xcworkspace in Xcode
+
+Select your target device
+
+Go to Product > Archive
+
+Export the .ipa file for distribution
+
+📸 Screenshots
+
+(coming soon – add screenshots of your dashboard, charts, FAB, etc.)
+
+🛠️ Tech Stack
+
+React Native
+
+Firefly III API
+
+Axios
+
+React Navigation
+
+Recharts / react-native-svg-charts
+
+EncryptedStorage
+
+🤝 Contributing
+
+Contributions are welcome!
+
+Fork the repo
+
+Create a feature branch
+
+Submit a pull request
+
+📜 License
+
+This project is licensed under the MIT License.
+
+See LICENSE
+
+for details.
+
+🙌 Credits
+
+Firefly III
+
+– the amazing self-hosted finance manager
+
+Community libraries that made this possible
+
+\---
+
+Would you like me to also include a \*\*badges section\*\* (like build status, version, platform: Android/iOS, etc.) at the top to make it look even more professional on GitHub?
