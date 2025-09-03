@@ -1,58 +1,58 @@
-\# 📱 FinFly – Firefly III Mobile Client
+**FinFly -- Firefly III Mobile Client**
 
-FinFly is a modern \*\*React Native mobile application\*\* for \[Firefly III\](https://www.firefly-iii.org/), the self-hosted personal finance manager.
+FinFly is a modern ***React Native mobile application*** for [Firefly
+III](https://www.firefly-iii.org/), the self-hosted personal finance
+manager.
 
-It brings your Firefly III finances to your Android/iOS device with a clean, widget-style dashboard, charts, and fast transaction entry.
+It brings your Firefly III finances to your Android/iOS device with a
+clean, widget-style dashboard, charts, and fast transaction entry.
 
-\---
+**✨ Features**
 
-\## ✨ Features
+🔑 Secure login with \\\*\\\*Personal Access Token (PAT)\\\*\\\* +
+encrypted storage
 
-\- 🔑 Secure login with \*\*Personal Access Token (PAT)\*\* + encrypted storage
+📊 Dashboard with:
 
-\- 📊 Dashboard with:
+-   Debit vs Credit bar chart
 
-\- Debit vs Credit bar chart
+-   Category-wise expenses (pie chart)
 
-\- Category-wise expenses (pie chart)
+-   Income vs Expense over time (line chart)
 
-\- Income vs Expense over time (line chart)
+-   Net Worth, Budgets, Account Balances, and Upcoming Bills widgets
 
-\- Net Worth, Budgets, Account Balances, and Upcoming Bills widgets
+-   Latest transactions list (last 10)
 
-\- 📜 Latest transactions list (last 10)
+-   📅 Date filters (1d, 30d, 90d, YTD, Custom) with custom range picker
 
-\- 📅 Date filters (1d, 30d, 90d, YTD, Custom) with custom range picker
+-   🎨 Light/Dark theme toggle
 
-\- 🎨 Light/Dark theme toggle
+-   ➕ Animated Floating Action Button (FAB) to quickly add
+    \\\*\\\*Withdraw, Deposit, Transfer\\\*\\\*
 
-\- ➕ Animated Floating Action Button (FAB) to quickly add \*\*Withdraw, Deposit, Transfer\*\*
+-   📂 Reusable card-based UI components
 
-\- 📂 Reusable card-based UI components
+-   🔐 Credentials stored securely with EncryptedStorage
 
-\- 🔐 Credentials stored securely with EncryptedStorage
+-   🌐 Works with any Firefly III instance (self-hosted or remote)
 
-\- 🌐 Works with any Firefly III instance (self-hosted or remote)
+**🚀 Getting Started**
 
-\---
-
-\## 🚀 Getting Started
-
-\### 1. Clone the repository
-
-\`\`\`bash
+#1 Clone the repository
 
 git clone https://github.com/yourusername/finfly.git
 
 cd finfly
 
-2\. Install dependencies
+#2 Install dependencies
 
-npm install --legacy-peer-deps
+npm install \--legacy-peer-deps
 
-3\. Configure Firefly III
+#3 Configure Firefly III
 
-Open the app and enter your Firefly III host URL and Personal Access Token (PAT).
+Open the app and enter your Firefly III host URL and Personal Access
+Token (PAT).
 
 These will be securely saved for auto-login.
 
@@ -68,27 +68,25 @@ In another terminal, run the Android build:
 
 npx react-native run-android
 
-The app should open automatically on your Android emulator or connected device.
+The app should open automatically on your Android emulator or connected
+device.
 
-⚠️ Note: I develop on Windows so only the Android build is tested and generated here.
+⚠️ Note: I develop on Windows so only the Android build is tested and
+generated here.
 
 On iOS (Mac only)
 
-Since I don’t have a Mac, I cannot generate the iOS build myself.
+Since I don't have a Mac, I cannot generate the iOS build myself.
 
 If you are on macOS, you can build it by following these steps:
 
-Install Xcode
-
-.
-
-Install pods:
-
-cd ios
-
-pod install
-
-cd ..
+> Install pods:
+>
+> cd ios
+>
+> pod install
+>
+> cd ..
 
 Run on iOS simulator:
 
@@ -100,27 +98,23 @@ Open ios/FinFly.xcworkspace in Xcode
 
 Select your target device
 
-Go to Product > Archive
+Go to Product \> Archive
 
 Export the .ipa file for distribution
 
-📸 Screenshots
-
-(coming soon – add screenshots of your dashboard, charts, FAB, etc.)
-
 🛠️ Tech Stack
 
-React Native
+-   React Native
 
-Firefly III API
+-   Firefly III API
 
-Axios
+-   Axios
 
-React Navigation
+-   React Navigation
 
-Recharts / react-native-svg-charts
+-   Recharts / react-native-svg-charts
 
-EncryptedStorage
+-   EncryptedStorage
 
 🤝 Contributing
 
@@ -144,10 +138,10 @@ for details.
 
 Firefly III
 
-– the amazing self-hosted finance manager
+-- the amazing self-hosted finance manager
 
 Community libraries that made this possible
 
-\---
-
-Would you like me to also include a \*\*badges section\*\* (like build status, version, platform: Android/iOS, etc.) at the top to make it look even more professional on GitHub?
+Would you like me to also include a \\\*\\\*badges section\\\*\\\* (like
+build status, version, platform: Android/iOS, etc.) at the top to make
+it look even more professional on GitHub?
