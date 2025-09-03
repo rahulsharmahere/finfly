@@ -62,11 +62,11 @@ On Android (Windows / Linux / Mac)
 
 Start Metro bundler:
 
-npx react-native start
+> npx react-native start
 
 In another terminal, run the Android build:
 
-npx react-native run-android
+> npx react-native run-android
 
 The app should open automatically on your Android emulator or connected
 device.
@@ -90,17 +90,17 @@ If you are on macOS, you can build it by following these steps:
 
 Run on iOS simulator:
 
-npx react-native run-ios
+> npx react-native run-ios
 
 To generate an iOS archive:
 
-Open ios/FinFly.xcworkspace in Xcode
+> Open ios/FinFly.xcworkspace in Xcode
 
-Select your target device
+> Select your target device
 
-Go to Product \> Archive
+> Go to Product \> Archive
 
-Export the .ipa file for distribution
+> Export the .ipa file for distribution
 
 🛠️ Tech Stack
 
