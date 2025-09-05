@@ -61,11 +61,13 @@ export default function AssetsScreen() {
   }, []);
 
   const renderItem = ({ item }) => (
-    <View style={styles.listItem}>
-      <Text style={styles.itemName}>{item.name}</Text>
-      <Text style={styles.itemBalance}>Balance: {item.balance}</Text>
-    </View>
-  );
+  <View style={styles.listItem}>
+    <Text style={styles.itemName}>{item.name}</Text>
+    <Text style={styles.itemBalance}>
+      Balance: {item.balance.toFixed(2)}
+    </Text>
+  </View>
+)
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -101,12 +103,12 @@ export default function AssetsScreen() {
               </TouchableOpacity>
             }
             ListFooterComponent={
-              <View style={styles.totalContainer}>
-                <Text style={styles.totalText}>
-                  Total Assets: {totalAssets}
-                </Text>
-              </View>
-            }
+  <View style={styles.totalContainer}>
+    <Text style={styles.totalText}>
+      Total Assets: {totalAssets.toFixed(2)}
+    </Text>
+  </View>
+}
           />
         )}
 
