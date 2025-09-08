@@ -1,76 +1,222 @@
-// src/screens/AddAssetScreen.js
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
-import { createAccount } from "../utils/fireflyApi";
-import { useNavigation } from "@react-navigation/native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import moment from "moment";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { createAccount, updateAccount } from "../utils/fireflyApi";
+import Footer from "../components/Footer";
+import ThreeDotMenu from "../components/ThreeDotMenu";
 
 export default function AddAssetScreen() {
   const navigation = useNavigation();
-  const [name, setName] = useState("");
-  const [openingBalance, setOpeningBalance] = useState("");
+  const route = useRoute();
+  const editingAccount = route.params?.account || null;
 
-  const handleCreate = async () => {
+  // ✅ Prefill if editing
+  const [name, setName] = useState(editingAccount?.name || "");
+  const [accountNumber, setAccountNumber] = useState(editingAccount?.account_number || "");
+  const [openingBalance, setOpeningBalance] = useState(editingAccount?.opening_balance?.toString() || "");
+  const [openingBalanceDate, setOpeningBalanceDate] = useState(
+    editingAccount?.opening_balance_date ? new Date(editingAccount.opening_balance_date) : new Date()
+  );
+  const [accountRole, setAccountRole] = useState(editingAccount?.account_role || "defaultAsset");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const isEditMode = !!editingAccount;
+
+  const handleSave = async () => {
     if (!name.trim()) {
-      Alert.alert("Validation", "Please enter account name");
+      Alert.alert("Validation Error", "Please enter account name.");
       return;
     }
 
     try {
-      await createAccount({
-        name,
-        type: "asset",
-        openingBalance: parseFloat(openingBalance) || 0,
-      });
-      Alert.alert("Success", "Asset account created successfully!");
+      if (isEditMode) {
+        await updateAccount(editingAccount.id, {
+          name,
+          type: "asset",
+          accountRole,
+          accountNumber,
+          openingBalance: openingBalance || "0",
+          openingBalanceDate: moment(openingBalanceDate).format("YYYY-MM-DD"),
+        });
+        Alert.alert("Success", "Account updated successfully!");
+      } else {
+        await createAccount({
+          name,
+          type: "asset",
+          accountRole,
+          accountNumber,
+          openingBalance: openingBalance || "0",
+          openingBalanceDate: moment(openingBalanceDate).format("YYYY-MM-DD"),
+        });
+        Alert.alert("Success", "Account created successfully!");
+      }
+
       navigation.goBack();
     } catch (err) {
-      console.error("Error creating account:", err);
-      Alert.alert("Error", "Failed to create account");
+      console.error("❌ Error saving account:", err.response?.data || err.message);
+      Alert.alert("Error", JSON.stringify(err.response?.data || err.message));
     }
   };
 
+  const resetForm = () => {
+    setName("");
+    setAccountNumber("");
+    setOpeningBalance("");
+    setOpeningBalanceDate(new Date());
+    setAccountRole("defaultAsset");
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Account Name</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Enter account name"
-      />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerIconWrapper}>
+          <Text style={styles.headerIcon}>←</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.label}>Opening Balance</Text>
-      <TextInput
-        style={styles.input}
-        value={openingBalance}
-        onChangeText={setOpeningBalance}
-        placeholder="Enter opening balance"
-        keyboardType="numeric"
-      />
+        <Text style={styles.headerTitle}>
+          {isEditMode ? "Edit Asset Account" : "Add Asset Account"}
+        </Text>
 
-      <TouchableOpacity style={styles.button} onPress={handleCreate}>
-        <Text style={styles.buttonText}>Create Account</Text>
-      </TouchableOpacity>
-    </View>
+        <ThreeDotMenu />
+      </View>
+
+      {/* Body */}
+      <ScrollView style={styles.container}>
+        <Text style={styles.label}>Account Name *</Text>
+        <TextInput style={styles.input} value={name} onChangeText={setName} />
+
+        <Text style={styles.label}>Account Number (optional)</Text>
+        <TextInput
+          style={styles.input}
+          value={accountNumber}
+          onChangeText={setAccountNumber}
+        />
+
+        <Text style={styles.label}>Opening Balance</Text>
+        <TextInput
+          style={styles.input}
+          value={openingBalance}
+          onChangeText={setOpeningBalance}
+          keyboardType="numeric"
+        />
+
+        <Text style={styles.label}>Opening Balance Date</Text>
+        <TouchableOpacity
+          style={styles.dateButton}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <Text style={styles.dateText}>
+            {moment(openingBalanceDate).format("YYYY-MM-DD")}
+          </Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={openingBalanceDate}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) setOpeningBalanceDate(selectedDate);
+            }}
+          />
+        )}
+
+        <Text style={styles.label}>Account Role *</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={accountRole}
+            onValueChange={(value) => setAccountRole(value)}
+            style={styles.picker}
+          >
+            <Picker.Item label="Default Asset" value="defaultAsset" />
+            <Picker.Item label="Shared Asset" value="sharedAsset" />
+            <Picker.Item label="Saving Asset" value="savingAsset" />
+            <Picker.Item label="Credit Card Asset" value="ccAsset" />
+            <Picker.Item label="Cash Wallet" value="cashWalletAsset" />
+          </Picker>
+        </View>
+
+        <TouchableOpacity style={styles.button} onPress={handleSave}>
+          <Text style={styles.buttonText}>
+            {isEditMode ? "Update Account" : "Create Account"}
+          </Text>
+        </TouchableOpacity>
+
+        {!isEditMode && (
+          <TouchableOpacity
+            style={[styles.button, styles.resetButton]}
+            onPress={resetForm}
+          >
+            <Text style={styles.buttonText}>Reset Form</Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+
+      <Footer />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2196F3",
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+  },
+  headerIconWrapper: { width: 40, alignItems: "flex-start" },
+  headerIcon: { color: "#fff", fontSize: 22 },
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
   container: { flex: 1, padding: 20 },
-  label: { fontSize: 16, marginTop: 16 },
+  label: { fontSize: 16, fontWeight: "600", marginBottom: 5 },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     padding: 10,
-    marginTop: 8,
+    marginBottom: 15,
   },
+  dateButton: {
+    padding: 12,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  dateText: { fontSize: 16 },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  picker: { height: 50, width: "100%" },
   button: {
     backgroundColor: "#2196F3",
     padding: 15,
     borderRadius: 8,
-    marginTop: 24,
-    alignItems: "center",
+    marginBottom: 10,
   },
-  buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  resetButton: { backgroundColor: "#FF5722" },
+  buttonText: { color: "white", textAlign: "center", fontWeight: "bold" },
 });

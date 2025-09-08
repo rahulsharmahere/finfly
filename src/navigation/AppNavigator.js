@@ -15,6 +15,7 @@ import AccountDetailScreen from '../screens/AccountDetailScreen';
 import AddAssetScreen from '../screens/AddAssetScreen';
 import AssetsScreen from '../screens/AssetsScreen';
 import LiabilitiesScreen from '../screens/LiabilitiesScreen';
+import AddLiabilitiesScreen from '../screens/AddLiabilitiesScreen';
 import ReportScreen from '../screens/ReportScreen';
 import ReportResultScreen from '../screens/ReportResultScreen'; // NEW
 
@@ -88,9 +89,9 @@ export default function AppNavigator() {
 
       {/* Accounts */}
       <Stack.Screen
-        name="AccountDetail"
+        name="AccountDetailScreen"
         component={AccountDetailScreen}
-        options={{ title: 'Account Details' }}
+        options={{ headerShown: false  }}
       />
       <Stack.Screen
         name="Assets"
@@ -98,13 +99,18 @@ export default function AppNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="AddAsset"
+        name="AddAssetScreen"
         component={AddAssetScreen}
-        options={{ title: 'Add Asset' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Liabilities"
         component={LiabilitiesScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="AddLiabilitiesScreen"
+        component={AddLiabilitiesScreen}
         options={{ headerShown: false }}
       />
 

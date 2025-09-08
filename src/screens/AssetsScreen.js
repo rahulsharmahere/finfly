@@ -14,6 +14,7 @@ import axios from "axios";
 import { getAuthConfig } from "../utils/fireflyApi";
 import Footer from "../components/Footer";
 import ThreeDotMenu from "../components/ThreeDotMenu";
+import Icon from "react-native-vector-icons/Ionicons";
 
 export default function AssetsScreen() {
   const navigation = useNavigation();
@@ -35,6 +36,7 @@ export default function AssetsScreen() {
         id: acc.id,
         name: acc.attributes?.name || "Unnamed Asset",
         balance: parseFloat(acc.attributes?.current_balance) || 0,
+        ...acc.attributes,
       }));
 
       setAssets(assetData);
@@ -61,13 +63,20 @@ export default function AssetsScreen() {
   }, []);
 
   const renderItem = ({ item }) => (
-  <View style={styles.listItem}>
-    <Text style={styles.itemName}>{item.name}</Text>
-    <Text style={styles.itemBalance}>
-      Balance: {item.balance.toFixed(2)}
-    </Text>
-  </View>
-)
+    <View style={styles.listItem}>
+      <View>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.itemBalance}>
+          Balance: {item.balance.toFixed(2)}
+        </Text>
+      </View>
+      <TouchableOpacity
+        onPress={() => navigation.navigate("AddAssetScreen", { account: item })}
+      >
+        <Icon name="pencil" size={22} color="#2196F3" />
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safeContainer}>
@@ -78,8 +87,6 @@ export default function AssetsScreen() {
             <Text style={styles.headerIcon}>←</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Assets</Text>
-
-          {/* ✅ Use ThreeDotMenu */}
           <ThreeDotMenu />
         </View>
 
@@ -90,7 +97,7 @@ export default function AssetsScreen() {
             data={assets}
             keyExtractor={(item) => item.id.toString()}
             renderItem={renderItem}
-            contentContainerStyle={{ paddingBottom: 150 }} // enough space for footer + system buttons
+            contentContainerStyle={{ paddingBottom: 150 }}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
@@ -103,16 +110,15 @@ export default function AssetsScreen() {
               </TouchableOpacity>
             }
             ListFooterComponent={
-  <View style={styles.totalContainer}>
-    <Text style={styles.totalText}>
-      Total Assets: {totalAssets.toFixed(2)}
-    </Text>
-  </View>
-}
+              <View style={styles.totalContainer}>
+                <Text style={styles.totalText}>
+                  Total Assets: {totalAssets.toFixed(2)}
+                </Text>
+              </View>
+            }
           />
         )}
 
-        {/* Footer */}
         <View style={styles.footerWrapper}>
           <Footer />
         </View>
@@ -143,6 +149,9 @@ const styles = StyleSheet.create({
   },
   addBtnText: { color: "white", textAlign: "center", fontWeight: "bold" },
   listItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 15,
     backgroundColor: "#f2f2f2",
     borderRadius: 8,

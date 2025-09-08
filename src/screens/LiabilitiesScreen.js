@@ -81,7 +81,7 @@ export default function LiabilitiesScreen() {
       {/* Add Button */}
       <TouchableOpacity
         style={styles.addBtn}
-        onPress={() => navigation.navigate("AddLiabilityScreen")}
+        onPress={() => navigation.navigate("AddLiabilitiesScreen")}
       >
         <Text style={styles.addBtnText}>+ Add New Liability</Text>
       </TouchableOpacity>

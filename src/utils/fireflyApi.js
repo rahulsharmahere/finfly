@@ -2,6 +2,7 @@ import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import moment from "moment";
 
+
 // 🔑 Load host + token from EncryptedStorage
 export const getAuthConfig = async () => {
   try {
@@ -284,4 +285,76 @@ export const fetchReportTransactions = async ({
     console.error("❌ Error fetching report transactions:", err.response?.data || err.message);
     throw err;
   }
+};
+
+//
+// 📜 Transactions by Account (for AccountDetailScreen)
+//
+export const fetchTransactionsByAccount = async (accountId, startDate, endDate, page = 1, limit = 25) => {
+  try {
+    const config = await getAuthConfig();
+
+    const params = {
+      start: startDate || null,
+      end: endDate || new Date().toISOString().split("T")[0],
+      page,
+      limit,
+    };
+
+    const response = await axios.get(`accounts/${accountId}/transactions`, {
+      baseURL: config.baseURL,
+      headers: config.headers,
+      params,
+    });
+
+    if (!response.data?.data) return { data: [], meta: { last_page: 1 } };
+
+    const data = response.data.data.map((tx) => {
+      const attrs = tx.attributes;
+      const t = attrs.transactions?.[0] || {};
+      return {
+        id: tx.id,
+        description: attrs.description || t.description || "No description",
+        date: attrs.date || t.date,
+        type: attrs.transaction_type || t.type,
+        amount: parseFloat(t.amount || 0).toFixed(2),
+        currency: t.currency_code || "",
+      };
+    });
+
+    const meta = response.data.meta || { last_page: 1 };
+
+    return { data, meta };
+  } catch (error) {
+    console.error("❌ Error fetching transactions by account:", error.response?.data || error.message);
+    return { data: [], meta: { last_page: 1 } };
+  }
+};
+
+
+export const createAccount = async ({ name, type, accountNumber, openingBalance, openingBalanceDate, accountRole }) => {
+  const config = await getAuthConfig();
+
+  return axios.post(
+    "accounts",
+    {
+      name,
+      type,
+      account_role: accountRole,   // ✅ required when type=asset
+      account_number: accountNumber,
+      opening_balance: openingBalance,
+      opening_balance_date: openingBalanceDate,
+    },
+    config
+  );
+};
+
+export const updateAccount = async (id, accountData) => {
+  const config = await getAuthConfig();
+  const response = await axios.put(
+    `accounts/${id}`,
+    accountData,
+    config
+  );
+  return response.data;
 };
