@@ -12,6 +12,7 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { getAuthConfig } from "../utils/fireflyApi";
+import { fetchActualBalance } from "../utils/fireflyBalances";
 import Footer from "../components/Footer";
 import ThreeDotMenu from "../components/ThreeDotMenu";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -27,20 +28,24 @@ export default function AssetsScreen() {
     try {
       setLoading(true);
       const config = await getAuthConfig();
-      const res = await axios.get(
-        "accounts?type=asset&with_current_balance=true",
-        config
+      const res = await axios.get("accounts?type=asset", config);
+      const assetData = res.data?.data || [];
+
+      // Fetch correct balance for each account
+      const balances = await Promise.all(
+        assetData.map(async (acc) => {
+          const balance = await fetchActualBalance(acc.id);
+          return {
+            id: acc.id,
+            name: acc.attributes?.name || "Unnamed Asset",
+            balance,
+            ...acc.attributes,
+          };
+        })
       );
 
-      const assetData = (res.data?.data || []).map((acc) => ({
-        id: acc.id,
-        name: acc.attributes?.name || "Unnamed Asset",
-        balance: parseFloat(acc.attributes?.current_balance) || 0,
-        ...acc.attributes,
-      }));
-
-      setAssets(assetData);
-      setTotalAssets(assetData.reduce((sum, a) => sum + a.balance, 0));
+      setAssets(balances);
+      setTotalAssets(balances.reduce((sum, a) => sum + a.balance, 0));
     } catch (error) {
       console.error("fetchAssets error", error);
       setAssets([]);
@@ -70,8 +75,11 @@ export default function AssetsScreen() {
           Balance: {item.balance.toFixed(2)}
         </Text>
       </View>
+      {/* Navigate to AddAssetScreen with account for editing */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("AddAssetScreen", { account: item })}
+        onPress={() =>
+          navigation.navigate("AddAssetScreen", { account: item })
+        }
       >
         <Icon name="pencil" size={22} color="#2196F3" />
       </TouchableOpacity>
@@ -166,10 +174,5 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   totalText: { fontWeight: "bold", fontSize: 16 },
-  footerWrapper: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+  footerWrapper: { position: "absolute", bottom: 0, left: 0, right: 0 },
 });

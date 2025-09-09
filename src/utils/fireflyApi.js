@@ -2,8 +2,9 @@ import axios from "axios";
 import EncryptedStorage from "react-native-encrypted-storage";
 import moment from "moment";
 
-
+//
 // 🔑 Load host + token from EncryptedStorage
+//
 export const getAuthConfig = async () => {
   try {
     const credentials = await EncryptedStorage.getItem("firefly_credentials");
@@ -11,7 +12,7 @@ export const getAuthConfig = async () => {
     const { host, token } = JSON.parse(credentials);
 
     return {
-      baseURL: host.replace(/\/+$/, "") + "/api/v1/",
+      baseURL: host.replace(/\/+$/, "") + "/api/v1",
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
@@ -24,28 +25,52 @@ export const getAuthConfig = async () => {
 };
 
 //
+// 🏦 Accounts with live balance
+//
+export const fetchAccountsWithBalance = async () => {
+  try {
+    const config = await getAuthConfig();
+    const response = await axios.get("/accounts", config);
+    const accounts = response.data.data;
+
+    return accounts
+      .filter((acc) => ["asset", "cash", "bank", "liability"].includes(acc.attributes.type))
+      .map((acc) => {
+        const balanceStr = acc.attributes.meta?.balance?.native_currency?.amount ?? 0;
+        return {
+          id: acc.id,
+          name: acc.attributes.name,
+          type: acc.attributes.type,
+          balance: parseFloat(balanceStr),
+          currency: acc.attributes.currency_symbol,
+        };
+      });
+  } catch (error) {
+    console.error("❌ Error fetching accounts with balance:", error.response?.data || error.message);
+    return [];
+  }
+};
+
+//
 // 📊 Net Worth
 //
 export const fetchNetWorth = async () => {
   try {
-    const config = await getAuthConfig();
-    const response = await axios.get("accounts", config);
-
+    const accounts = await fetchAccountsWithBalance();
     let total = 0;
-    const validTypes = ["asset", "cash", "bank", "liabilities"];
 
-    response.data.data.forEach((account) => {
-      const attrs = account.attributes;
-      const balance = parseFloat(attrs.current_balance ?? 0);
-      if (validTypes.includes(attrs.type) && attrs.active && attrs.include_net_worth) {
-        total += balance;
+    accounts.forEach((acc) => {
+      if (["asset", "cash", "bank"].includes(acc.type)) {
+        total += acc.balance;
+      } else if (acc.type === "liability") {
+        total -= acc.balance;
       }
     });
 
     return total;
   } catch (error) {
     console.error("❌ Error fetching net worth:", error.response?.data || error.message);
-    throw error;
+    return 0;
   }
 };
 
@@ -55,7 +80,7 @@ export const fetchNetWorth = async () => {
 export const fetchTransactionsSummary = async (start, end) => {
   try {
     const config = await getAuthConfig();
-    const response = await axios.get("transactions", {
+    const response = await axios.get("/transactions", {
       ...config,
       params: { start, end },
     });
@@ -95,7 +120,7 @@ export const fetchTransactionsSummary = async (start, end) => {
 export const fetchExpensesByCategory = async (start, end) => {
   try {
     const config = await getAuthConfig();
-    const response = await axios.get("transactions", {
+    const response = await axios.get("/transactions", {
       ...config,
       params: { start, end, type: "withdrawal" },
     });
@@ -121,11 +146,10 @@ export const fetchExpensesByCategory = async (start, end) => {
 export const fetchIncomeExpenseOverTime = async () => {
   try {
     const config = await getAuthConfig();
-
     const start = moment().subtract(6, "months").format("YYYY-MM-DD");
     const end = moment().format("YYYY-MM-DD");
 
-    const response = await axios.get("chart/account/overview", {
+    const response = await axios.get("/chart/account/overview", {
       ...config,
       params: { start, end, group_by: "month" },
     });
@@ -150,7 +174,7 @@ export const fetchIncomeExpenseOverTime = async () => {
 export const fetchLatestTransactions = async (limit = 10) => {
   try {
     const config = await getAuthConfig();
-    const response = await axios.get("transactions", {
+    const response = await axios.get("/transactions", {
       ...config,
       params: { limit, page: 1, order: "desc" },
     });
@@ -170,39 +194,14 @@ export const fetchLatestTransactions = async (limit = 10) => {
 };
 
 //
-// 🏦 Accounts list
-//
-export const fetchAccounts = async () => {
-  try {
-    const config = await getAuthConfig();
-    const response = await axios.get("accounts", config);
-
-    return response.data.data
-      .filter((acc) => ["asset", "cash", "bank", "liabilities"].includes(acc.attributes.type))
-      .map((acc) => ({
-        id: acc.id,
-        name: acc.attributes.name,
-        type: acc.attributes.type,
-        balance: parseFloat(acc.attributes.current_balance ?? 0),
-      }));
-  } catch (error) {
-    console.error("❌ Error fetching accounts:", error.response?.data || error.message);
-    return [];
-  }
-};
-
-//
 // 📂 Categories
 //
 export const fetchCategories = async () => {
   try {
     const config = await getAuthConfig();
-    const response = await axios.get("categories", config);
+    const response = await axios.get("/categories", config);
 
-    return response.data.data.map((c) => ({
-      id: c.id,
-      name: c.attributes.name,
-    }));
+    return response.data.data.map((c) => ({ id: c.id, name: c.attributes.name }));
   } catch (error) {
     console.error("❌ Error fetching categories:", error.response?.data || error.message);
     return [];
@@ -215,12 +214,9 @@ export const fetchCategories = async () => {
 export const fetchTags = async () => {
   try {
     const config = await getAuthConfig();
-    const response = await axios.get("tags", config);
+    const response = await axios.get("/tags", config);
 
-    return response.data.data.map((t) => ({
-      id: t.id,
-      name: t.attributes.tag,
-    }));
+    return response.data.data.map((t) => ({ id: t.id, name: t.attributes.tag }));
   } catch (error) {
     console.error("❌ Error fetching tags:", error.response?.data || error.message);
     return [];
@@ -268,18 +264,12 @@ export const fetchReportTransactions = async ({
       }
     }
 
-    // params
     let params = { start, end, page, limit };
-
     if (selectedAccounts.length > 0) params["accounts"] = selectedAccounts.join(",");
     if (selectedCategories.length > 0) params["categories"] = selectedCategories.join(",");
     if (selectedTags.length > 0) params["tags"] = selectedTags.join(",");
 
-    const response = await axios.get("transactions", {
-      ...config,
-      params,
-    });
-
+    const response = await axios.get("/transactions", { ...config, params });
     return response.data.data;
   } catch (err) {
     console.error("❌ Error fetching report transactions:", err.response?.data || err.message);
@@ -290,7 +280,13 @@ export const fetchReportTransactions = async ({
 //
 // 📜 Transactions by Account (for AccountDetailScreen)
 //
-export const fetchTransactionsByAccount = async (accountId, startDate, endDate, page = 1, limit = 25) => {
+export const fetchTransactionsByAccount = async (
+  accountId,
+  startDate,
+  endDate,
+  page = 1,
+  limit = 25
+) => {
   try {
     const config = await getAuthConfig();
 
@@ -301,7 +297,7 @@ export const fetchTransactionsByAccount = async (accountId, startDate, endDate, 
       limit,
     };
 
-    const response = await axios.get(`accounts/${accountId}/transactions`, {
+    const response = await axios.get(`/accounts/${accountId}/transactions`, {
       baseURL: config.baseURL,
       headers: config.headers,
       params,
@@ -323,7 +319,6 @@ export const fetchTransactionsByAccount = async (accountId, startDate, endDate, 
     });
 
     const meta = response.data.meta || { last_page: 1 };
-
     return { data, meta };
   } catch (error) {
     console.error("❌ Error fetching transactions by account:", error.response?.data || error.message);
@@ -331,30 +326,66 @@ export const fetchTransactionsByAccount = async (accountId, startDate, endDate, 
   }
 };
 
+//
+// ➕ Create Account
+//
+export const createAccount = async ({
+  name,
+  type, // asset | liability | cash | bank
+  accountNumber,
+  openingBalance,
+  openingBalanceDate,
+  accountRole, // only for asset
+}) => {
+  try {
+    const config = await getAuthConfig();
 
-export const createAccount = async ({ name, type, accountNumber, openingBalance, openingBalanceDate, accountRole }) => {
-  const config = await getAuthConfig();
-
-  return axios.post(
-    "accounts",
-    {
+    const payload = {
       name,
       type,
-      account_role: accountRole,   // ✅ required when type=asset
       account_number: accountNumber,
       opening_balance: openingBalance,
       opening_balance_date: openingBalanceDate,
-    },
-    config
-  );
+    };
+
+    if (type === "asset" && accountRole) {
+      payload.account_role = accountRole;
+    }
+
+    const response = await axios.post("/accounts", payload, config);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error creating account:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
+//
+// ✏️ Update Account
+//
 export const updateAccount = async (id, accountData) => {
-  const config = await getAuthConfig();
-  const response = await axios.put(
-    `accounts/${id}`,
-    accountData,
-    config
-  );
-  return response.data;
+  try {
+    const config = await getAuthConfig();
+    const response = await axios.put(`/accounts/${id}`, accountData, config);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error updating account:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+//
+// 🔹 Fetch actual balance of an account
+//
+export const fetchActualBalance = async (accountId) => {
+  try {
+    const config = await getAuthConfig();
+    const res = await axios.get(`/accounts/${accountId}`, config);
+
+    const balanceStr = res.data?.data?.attributes?.meta?.balance?.native_currency?.amount;
+    return balanceStr ? parseFloat(balanceStr) : 0;
+  } catch (err) {
+    console.error("❌ fetchActualBalance error:", err.message);
+    return 0;
+  }
 };

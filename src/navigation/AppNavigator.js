@@ -59,7 +59,11 @@ export default function AppNavigator() {
       </Stack.Screen>
 
       {/* About */}
-      <Stack.Screen name="About" component={AboutScreen} />
+        <Stack.Screen
+        name="About"
+        component={AboutScreen}
+        options={{ headerShown: false  }}
+      />
 
       {/* Report Input */}
       <Stack.Screen

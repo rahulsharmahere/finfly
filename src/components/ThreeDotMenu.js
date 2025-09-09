@@ -4,12 +4,31 @@ import {
   View, Text, TouchableOpacity, Modal,
   TouchableWithoutFeedback, StyleSheet
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [] }) {
   const navigation = useNavigation();
   const [menuVisible, setMenuVisible] = useState(false);
   const [accountsMenuExpanded, setAccountsMenuExpanded] = useState(false);
+
+  const handleLogout = async () => {
+    setMenuVisible(false);
+    try {
+      // Clear stored credentials
+      await EncryptedStorage.removeItem('firefly_credentials');
+    } catch (e) {
+      console.error('Failed to clear credentials', e);
+    }
+
+    // Reset navigation to Login screen
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      })
+    );
+  };
 
   return (
     <>
@@ -34,7 +53,8 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
         </TouchableWithoutFeedback>
 
         <View style={styles.menuContainer}>
-<TouchableOpacity
+          {/* Dashboard */}
+          <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
               setMenuVisible(false);
@@ -43,6 +63,8 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
           >
             <Text style={styles.menuText}>Dashboard</Text>
           </TouchableOpacity>
+
+          {/* Reports */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
@@ -53,13 +75,14 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>Reports</Text>
           </TouchableOpacity>
 
-
           {/* Accounts Parent */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => setAccountsMenuExpanded(prev => !prev)}
           >
-            <Text style={styles.menuText}>Accounts {accountsMenuExpanded ? '▲' : '▼'}</Text>
+            <Text style={styles.menuText}>
+              Accounts {accountsMenuExpanded ? '▲' : '▼'}
+            </Text>
           </TouchableOpacity>
 
           {/* Submenu */}
@@ -87,7 +110,7 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             </View>
           )}
 
-          {/* Other Menu Items */}
+          {/* About */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
@@ -98,14 +121,10 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>About</Text>
           </TouchableOpacity>
 
-          
-
+          {/* Logout */}
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => {
-              setMenuVisible(false);
-              navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-            }}
+            onPress={handleLogout}
           >
             <Text style={styles.menuText}>Logout</Text>
           </TouchableOpacity>

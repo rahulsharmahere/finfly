@@ -13,7 +13,8 @@ import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import moment from "moment";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { createAccount, updateAccount } from "../utils/fireflyApi";
+import axios from "axios";
+import { getAuthConfig } from "../utils/fireflyApi";
 import Footer from "../components/Footer";
 import ThreeDotMenu from "../components/ThreeDotMenu";
 
@@ -22,7 +23,6 @@ export default function AddAssetScreen() {
   const route = useRoute();
   const editingAccount = route.params?.account || null;
 
-  // ✅ Prefill if editing
   const [name, setName] = useState(editingAccount?.name || "");
   const [accountNumber, setAccountNumber] = useState(editingAccount?.account_number || "");
   const [openingBalance, setOpeningBalance] = useState(editingAccount?.opening_balance?.toString() || "");
@@ -41,32 +41,43 @@ export default function AddAssetScreen() {
     }
 
     try {
+      const payload = {
+        name,
+        type: "asset",
+        account_number: accountNumber,
+        account_role: accountRole,
+        opening_balance: openingBalance || "0",
+        opening_balance_date: moment(openingBalanceDate).format("YYYY-MM-DD"),
+      };
+
+      const config = await getAuthConfig();
+
       if (isEditMode) {
-        await updateAccount(editingAccount.id, {
-          name,
-          type: "asset",
-          accountRole,
-          accountNumber,
-          openingBalance: openingBalance || "0",
-          openingBalanceDate: moment(openingBalanceDate).format("YYYY-MM-DD"),
-        });
-        Alert.alert("Success", "Account updated successfully!");
-      } else {
-        await createAccount({
-          name,
-          type: "asset",
-          accountRole,
-          accountNumber,
-          openingBalance: openingBalance || "0",
-          openingBalanceDate: moment(openingBalanceDate).format("YYYY-MM-DD"),
-        });
-        Alert.alert("Success", "Account created successfully!");
+        // Delete old account first
+        await axios.delete(`accounts/${editingAccount.id}`, config);
       }
 
+      // Create new account
+      await axios.post("accounts", payload, config);
+
+      Alert.alert("Success", `Account ${isEditMode ? "updated" : "created"} successfully!`);
       navigation.goBack();
     } catch (err) {
       console.error("❌ Error saving account:", err.response?.data || err.message);
-      Alert.alert("Error", JSON.stringify(err.response?.data || err.message));
+      Alert.alert("Error", err.response?.data?.message || "Failed to save account");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!isEditMode) return;
+    try {
+      const config = await getAuthConfig();
+      await axios.delete(`accounts/${editingAccount.id}`, config);
+      Alert.alert("Deleted", "Account deleted successfully!");
+      navigation.goBack();
+    } catch (err) {
+      console.error("❌ Error deleting account:", err.response?.data || err.message);
+      Alert.alert("Error", "Failed to delete account");
     }
   };
 
@@ -138,7 +149,7 @@ export default function AddAssetScreen() {
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={accountRole}
-            onValueChange={(value) => setAccountRole(value)}
+            onValueChange={setAccountRole}
             style={styles.picker}
           >
             <Picker.Item label="Default Asset" value="defaultAsset" />
@@ -155,7 +166,14 @@ export default function AddAssetScreen() {
           </Text>
         </TouchableOpacity>
 
-        {!isEditMode && (
+        {isEditMode ? (
+          <TouchableOpacity
+            style={[styles.button, styles.resetButton]}
+            onPress={handleDelete}
+          >
+            <Text style={styles.buttonText}>Delete Account</Text>
+          </TouchableOpacity>
+        ) : (
           <TouchableOpacity
             style={[styles.button, styles.resetButton]}
             onPress={resetForm}
@@ -171,52 +189,18 @@ export default function AddAssetScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#2196F3",
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-  },
+  header: { flexDirection: "row", alignItems: "center", backgroundColor: "#2196F3", padding: 12 },
   headerIconWrapper: { width: 40, alignItems: "flex-start" },
   headerIcon: { color: "#fff", fontSize: 22 },
-  headerTitle: {
-    flex: 1,
-    textAlign: "center",
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-
+  headerTitle: { flex: 1, textAlign: "center", color: "#fff", fontSize: 20, fontWeight: "bold" },
   container: { flex: 1, padding: 20 },
   label: { fontSize: 16, fontWeight: "600", marginBottom: 5 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 15,
-  },
-  dateButton: {
-    padding: 12,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    marginBottom: 15,
-  },
+  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, marginBottom: 15 },
+  dateButton: { padding: 12, backgroundColor: "#f0f0f0", borderRadius: 8, marginBottom: 15 },
   dateText: { fontSize: 16 },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    marginBottom: 20,
-  },
+  pickerContainer: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginBottom: 20 },
   picker: { height: 50, width: "100%" },
-  button: {
-    backgroundColor: "#2196F3",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
+  button: { backgroundColor: "#2196F3", padding: 15, borderRadius: 8, marginBottom: 10 },
   resetButton: { backgroundColor: "#FF5722" },
   buttonText: { color: "white", textAlign: "center", fontWeight: "bold" },
 });

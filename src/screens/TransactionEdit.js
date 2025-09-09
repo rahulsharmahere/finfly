@@ -298,6 +298,15 @@ export default function TransactionEdit() {
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
       >
+
+        {/* Description */}
+<Text style={styles.label}>Description</Text>
+<TextInput
+  style={styles.input}
+  placeholder="Enter description"
+  value={description}
+  onChangeText={setDescription}
+/>
         {/* Date / Time */}
         <Text style={styles.label}>Date</Text>
         <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
@@ -338,6 +347,8 @@ export default function TransactionEdit() {
             }}
           />
         )}
+
+      
 
         {/* Amount */}
         <Text style={styles.label}>Amount</Text>
