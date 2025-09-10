@@ -4,6 +4,11 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { MenuProvider } from 'react-native-popup-menu';
 
+
+export default function App() {
+
+  useAppUpdater({ owner: "rahulsharmahere", repo: "FinFly" });
+
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
