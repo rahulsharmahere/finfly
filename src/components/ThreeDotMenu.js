@@ -1,27 +1,34 @@
 // components/ThreeDotMenu.js
 import React, { useState } from 'react';
 import {
-  View, Text, TouchableOpacity, Modal,
-  TouchableWithoutFeedback, StyleSheet
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  TouchableWithoutFeedback,
+  StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { useUpdate } from '../context/UpdateContext'; // ✅ new hook from context
 
 export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [] }) {
   const navigation = useNavigation();
   const [menuVisible, setMenuVisible] = useState(false);
   const [accountsMenuExpanded, setAccountsMenuExpanded] = useState(false);
 
+  // ⬅️ updater context
+  const { checkForUpdate, checking } = useUpdate();
+
   const handleLogout = async () => {
     setMenuVisible(false);
     try {
-      // Clear stored credentials
       await EncryptedStorage.removeItem('firefly_credentials');
     } catch (e) {
       console.error('Failed to clear credentials', e);
     }
 
-    // Reset navigation to Login screen
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -32,7 +39,7 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
 
   return (
     <>
-      {/* Three dot button in header */}
+      {/* Three dot button */}
       <TouchableOpacity
         onPress={() => setMenuVisible(true)}
         style={styles.menuButton}
@@ -121,6 +128,17 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>About</Text>
           </TouchableOpacity>
 
+          {/* ✅ Check for Update */}
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              checkForUpdate({ force: true, showNoUpdateAlert: true });
+            }}
+          >
+            <Text style={styles.menuText}>Check for Update</Text>
+          </TouchableOpacity>
+
           {/* Logout */}
           <TouchableOpacity
             style={styles.menuItem}
@@ -129,6 +147,14 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>Logout</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Loader overlay when checking */}
+        {checking && (
+          <View style={styles.loaderOverlay}>
+            <ActivityIndicator size="large" color="#000" />
+            <Text style={{ marginTop: 8, fontSize: 16 }}>Checking for update...</Text>
+          </View>
+        )}
       </Modal>
     </>
   );
@@ -153,4 +179,10 @@ const styles = StyleSheet.create({
   },
   menuItem: { padding: 12 },
   menuText: { fontSize: 16 },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

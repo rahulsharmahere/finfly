@@ -21,16 +21,16 @@ export default function ReportResultScreen() {
   const { payload } = route.params || {};
 
   const [loading, setLoading] = useState(true);
-  const [allTx, setAllTx] = useState([]); // full, merged dataset
+  const [allTx, setAllTx] = useState([]); // merged dataset
   const [page, setPage] = useState(1);
 
   // Filters
   const [searchText, setSearchText] = useState("");
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all"); // all | deposit | transfer | withdrawal
+  const [typeFilter, setTypeFilter] = useState("all");
 
-  // Helper: fetch ALL pages for a given base URL (without &page=… &limit=…)
+  // Fetch all pages helper
   const fetchAllPages = async (baseUrl, config) => {
     let pageNum = 1;
     let results = [];
@@ -48,7 +48,7 @@ export default function ReportResultScreen() {
     return results;
   };
 
-  // Date getter (handles splits)
+  // Helpers
   const getItemDate = (item) =>
     new Date(
       item?.attributes?.date ||
@@ -57,7 +57,6 @@ export default function ReportResultScreen() {
         0
     );
 
-  // Amount getter (pick first split if present)
   const getItemAmount = (item) => {
     const attrs = item?.attributes || {};
     const tx = attrs.transactions?.[0] || {};
@@ -65,27 +64,26 @@ export default function ReportResultScreen() {
     return isNaN(amt) ? 0 : amt;
   };
 
-  // Type getter
   const getItemType = (item) => {
     const attrs = item?.attributes || {};
     const tx = attrs.transactions?.[0] || {};
     return (attrs.type || tx.type || "").toLowerCase();
   };
 
-  // Description getter
   const getItemDesc = (item) => {
     const attrs = item?.attributes || {};
     const tx = attrs.transactions?.[0] || {};
     return (attrs.description || tx.description || "No description").toString();
   };
 
+  // Fetching logic
   useEffect(() => {
     let isActive = true;
 
     (async () => {
       try {
         setLoading(true);
-        setPage(1); // reset to first page on new payload
+        setPage(1);
 
         const config = await getAuthConfig();
         let merged = [];
@@ -95,17 +93,16 @@ export default function ReportResultScreen() {
             Array.isArray(payload.accounts) && payload.accounts.length > 0;
 
           if (hasAccounts) {
-            // Try single API call with multiple accounts (preferred)
-            const ids = payload.accounts.map((a) =>
-              encodeURIComponent(typeof a === "object" ? a.id : a)
-            );
-            const accountsQuery = ids.map((id) => `accounts[]=${id}`).join("&");
-            const baseUrl = `transactions?start=${payload.start}&end=${payload.end}&${accountsQuery}`;
-
-            try {
-              merged = await fetchAllPages(baseUrl, config);
-            } catch (e) {
-              // Fallback: fetch each account separately and merge
+            if (payload.accounts.length === 1) {
+              // ✅ Single account → fetch only that account
+              const accId =
+                typeof payload.accounts[0] === "object"
+                  ? payload.accounts[0].id
+                  : payload.accounts[0];
+              const base = `accounts/${accId}/transactions?start=${payload.start}&end=${payload.end}`;
+              merged = await fetchAllPages(base, config);
+            } else {
+              // ✅ Multiple accounts → fetch each and merge
               const perAccount = await Promise.all(
                 payload.accounts.map(async (acc) => {
                   const accId = typeof acc === "object" ? acc.id : acc;
@@ -116,7 +113,7 @@ export default function ReportResultScreen() {
               merged = perAccount.flat();
             }
           } else {
-            // All accounts
+            // ✅ All accounts
             const baseUrl = `transactions?start=${payload.start}&end=${payload.end}`;
             merged = await fetchAllPages(baseUrl, config);
           }
@@ -125,7 +122,6 @@ export default function ReportResultScreen() {
           Array.isArray(payload.categories) &&
           payload.categories.length > 0
         ) {
-          // categories combined request
           const ids = payload.categories.map((c) => c.id).join(",");
           const baseUrl = `categories/${ids}/transactions?start=${payload.start}&end=${payload.end}`;
           merged = await fetchAllPages(baseUrl, config);
@@ -138,11 +134,10 @@ export default function ReportResultScreen() {
           const baseUrl = `tags/${ids}/transactions?start=${payload.start}&end=${payload.end}`;
           merged = await fetchAllPages(baseUrl, config);
         } else {
-          // Fallback: nothing selected -> empty
           merged = [];
         }
 
-        // Global sort by date DESC so entries interleave across accounts
+        // Sort globally by date DESC
         merged.sort((a, b) => getItemDate(b) - getItemDate(a));
 
         if (isActive) setAllTx(merged);
@@ -159,7 +154,7 @@ export default function ReportResultScreen() {
     };
   }, [payload]);
 
-  // Apply filters locally on the full dataset
+  // Apply filters
   const filteredTx = useMemo(() => {
     const s = searchText.trim().toLowerCase();
     const min = minAmount ? parseFloat(minAmount) : null;
@@ -180,14 +175,13 @@ export default function ReportResultScreen() {
     });
   }, [allTx, searchText, minAmount, maxAmount, typeFilter]);
 
-  // Client-side pagination over filtered list
+  // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredTx.length / PAGE_SIZE));
   const pageItems = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
     return filteredTx.slice(start, start + PAGE_SIZE);
   }, [filteredTx, page]);
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1);
   }, [searchText, minAmount, maxAmount, typeFilter]);
@@ -338,10 +332,7 @@ export default function ReportResultScreen() {
         {["all", "deposit", "transfer", "withdrawal"].map((t) => (
           <TouchableOpacity
             key={t}
-            style={[
-              styles.typeBtn,
-              typeFilter === t && styles.typeBtnActive,
-            ]}
+            style={[styles.typeBtn, typeFilter === t && styles.typeBtnActive]}
             onPress={() => setTypeFilter(t)}
           >
             <Text

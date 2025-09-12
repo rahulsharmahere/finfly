@@ -1,9 +1,18 @@
 // src/screens/AboutMe.js
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ThreeDotMenu from "../components/ThreeDotMenu";
 import Footer from "../components/Footer";
+
+import appVersion from "../utils/version"; // ✅ import version
 
 export default function AboutMe() {
   const navigation = useNavigation();
@@ -23,16 +32,19 @@ export default function AboutMe() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>About This App</Text>
         <Text style={styles.paragraph}>
-          This app is designed to help you manage your finances efficiently, track
-          transactions, categorize expenses, and get insights into your spending
-          habits. It integrates with Firefly III to bring your financial data
-          directly to your mobile device.
+          This app is designed to help you manage your finances efficiently,
+          track transactions, categorize expenses, and get insights into your
+          spending habits. It integrates with Firefly III to bring your
+          financial data directly to your mobile device.
         </Text>
+
+        {/* ✅ App Version */}
+        <Text style={styles.paragraph}>Version: {appVersion}</Text>
 
         <Text style={styles.title}>About Me</Text>
         <Text style={styles.paragraph}>
-          Hi! I'm Rahul Sharma, the developer behind this app. You can check out my
-          work and projects on my website:{" "}
+          Hi! I'm Rahul Sharma, the developer behind this app. You can check out
+          my work and projects on my website:{" "}
           <Text
             style={styles.link}
             onPress={() => Linking.openURL("https://rahulsharmahere.com/")}
@@ -45,10 +57,10 @@ export default function AboutMe() {
 
         <Text style={styles.title}>License</Text>
         <Text style={styles.paragraph}>
-          This app is released under the MIT License, which means you are free to
-          use, modify, and distribute it, provided that the original copyright
-          notice and license are included in any copies or substantial portions
-          of the software.
+          This app is released under the MIT License, which means you are free
+          to use, modify, and distribute it, provided that the original
+          copyright notice and license are included in any copies or substantial
+          portions of the software.
         </Text>
       </ScrollView>
 
