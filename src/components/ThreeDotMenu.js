@@ -1,4 +1,3 @@
-// components/ThreeDotMenu.js
 import React, { useState } from 'react';
 import {
   View,
@@ -11,15 +10,14 @@ import {
 } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import { useUpdate } from '../context/UpdateContext'; // ✅ new hook from context
+import { useUpdate } from '../context/UpdateContext';
 
 export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [] }) {
   const navigation = useNavigation();
   const [menuVisible, setMenuVisible] = useState(false);
   const [accountsMenuExpanded, setAccountsMenuExpanded] = useState(false);
 
-  // ⬅️ updater context
-  const { checkForUpdate, checking } = useUpdate();
+  const { checkForUpdate, isChecking } = useUpdate();
 
   const handleLogout = async () => {
     setMenuVisible(false);
@@ -28,7 +26,6 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
     } catch (e) {
       console.error('Failed to clear credentials', e);
     }
-
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -60,7 +57,6 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
         </TouchableWithoutFeedback>
 
         <View style={styles.menuContainer}>
-          {/* Dashboard */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
@@ -71,7 +67,6 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>Dashboard</Text>
           </TouchableOpacity>
 
-          {/* Reports */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
@@ -82,7 +77,6 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>Reports</Text>
           </TouchableOpacity>
 
-          {/* Accounts Parent */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => setAccountsMenuExpanded(prev => !prev)}
@@ -92,7 +86,6 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             </Text>
           </TouchableOpacity>
 
-          {/* Submenu */}
           {accountsMenuExpanded && (
             <View style={{ paddingLeft: 16 }}>
               <TouchableOpacity
@@ -117,7 +110,6 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             </View>
           )}
 
-          {/* About */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
@@ -128,18 +120,17 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
             <Text style={styles.menuText}>About</Text>
           </TouchableOpacity>
 
-          {/* ✅ Check for Update */}
+          {/* Check for Update */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => {
               setMenuVisible(false);
-              checkForUpdate({ force: true, showNoUpdateAlert: true });
+              checkForUpdate(); // modal handled by UpdateContext
             }}
           >
             <Text style={styles.menuText}>Check for Update</Text>
           </TouchableOpacity>
 
-          {/* Logout */}
           <TouchableOpacity
             style={styles.menuItem}
             onPress={handleLogout}
@@ -148,8 +139,7 @@ export default function ThreeDotMenu({ assetAccounts = [], liabilityAccounts = [
           </TouchableOpacity>
         </View>
 
-        {/* Loader overlay when checking */}
-        {checking && (
+        {isChecking && (
           <View style={styles.loaderOverlay}>
             <ActivityIndicator size="large" color="#000" />
             <Text style={{ marginTop: 8, fontSize: 16 }}>Checking for update...</Text>

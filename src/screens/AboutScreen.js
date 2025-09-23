@@ -12,7 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import ThreeDotMenu from "../components/ThreeDotMenu";
 import Footer from "../components/Footer";
 
-import appVersion from "../utils/version"; // ✅ import version
+import appVersion from "../utils/version";
 
 export default function AboutMe() {
   const navigation = useNavigation();

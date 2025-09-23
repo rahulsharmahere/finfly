@@ -1,31 +1,58 @@
-// src/context/UpdateContext.js
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import useAppUpdater from "../hooks/useAppUpdater";
-import UpdateModal from "../components/UpdateModal";
+import { version as appVersion } from "../../package.json";
+import { cancelDownload } from "../utils/downloadAndInstallApk";
 
-const UpdateContext = createContext(null);
+const UpdateContext = createContext();
 
-export function UpdateProvider({ owner, repo, children, autoCheck = true }) {
-  const updater = useAppUpdater({ owner, repo, autoCheck });
+export const UpdateProvider = ({ children }) => {
+  const {
+    isChecking,
+    updateAvailable,
+    latestVersion,
+    checkForUpdate,
+    onUpdateNow,
+    progress,
+  } = useAppUpdater(appVersion);
+
+  const [visible, setVisible] = useState(false);
+
+  // Show modal only when update becomes available
+  useEffect(() => {
+    if (updateAvailable) {
+      console.log("📢 Update available, showing modal");
+      setVisible(true);
+    }
+  }, [updateAvailable]);
+
+  const onLater = () => {
+    console.log("⏸️ User clicked Later");
+    setVisible(false);
+  };
+
+  const onCancel = () => {
+    console.log("⏹️ User clicked Cancel");
+    cancelDownload();
+    setVisible(false);
+  };
 
   return (
-    <UpdateContext.Provider value={updater}>
+    <UpdateContext.Provider
+      value={{
+        isChecking,
+        updateAvailable,
+        latestVersion,
+        visible,
+        onUpdateNow,
+        progress,
+        checkForUpdate,
+        onLater,
+        onCancel,
+      }}
+    >
       {children}
-      {/* Global modal always mounted so manual checks and auto-checks use same UI */}
-      <UpdateModal
-        visible={!!updater.updateAvailable || updater.downloading}
-        updateAvailable={updater.updateAvailable}
-        currentVersion={updater.currentVersion}
-        onUpdateNow={updater.handleUpdateNow}
-        onLater={updater.handleLater}
-        downloading={updater.downloading}
-        progress={updater.downloadProgress}
-        onCancelDownload={updater.cancelDownload}
-      />
     </UpdateContext.Provider>
   );
-}
+};
 
-export function useUpdate() {
-  return useContext(UpdateContext);
-}
+export const useUpdate = () => useContext(UpdateContext);

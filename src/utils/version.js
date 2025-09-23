@@ -1,4 +1,7 @@
 // src/utils/version.js
-import { version } from "../../package.json";
+import DeviceInfo from "react-native-device-info";
 
-export default version;
+export const appVersion = DeviceInfo.getVersion(); // versionName (Android), CFBundleShortVersionString (iOS)
+export const buildNumber = DeviceInfo.getBuildNumber(); // versionCode (Android), CFBundleVersion (iOS)
+
+export default `${appVersion} (build ${buildNumber})`;

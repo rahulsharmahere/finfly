@@ -1,71 +1,74 @@
-// src/components/UpdateModal.js
 import React from "react";
 import {
   Modal,
   View,
   Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
   ActivityIndicator,
-  ProgressBarAndroid,
-  ProgressViewIOS,
+  StyleSheet,
+  TouchableOpacity,
 } from "react-native";
+import { useUpdate } from "../context/UpdateContext";
+import { Bar as ProgressBar } from "react-native-progress";
 
-export default function UpdateModal({
-  visible,
-  updateAvailable,
-  currentVersion,
-  onUpdateNow,
-  onLater,
-  downloading = false,
-  progress = 0,
-  onCancelDownload,
-}) {
+export default function UpdateModal() {
+  const {
+    visible,
+    isChecking,
+    latestVersion,
+    onUpdateNow,
+    onLater,
+    progress,
+  } = useUpdate();
+
   if (!visible) return null;
 
-  const latest = updateAvailable?.latestVersion ?? null;
+  const isDownloading = progress > 0 && progress < 100;
 
   return (
     <Modal transparent visible={visible} animationType="fade">
-      <View style={styles.backdrop}>
-        <View style={styles.box}>
-          {!downloading ? (
+      <View style={styles.overlay}>
+        <View style={styles.container}>
+          <Text style={styles.title}>Update Available 🎉</Text>
+
+          {isChecking ? (
             <>
-              <Text style={styles.title}>Update Available</Text>
-              <Text style={styles.label}>
-                New version: <Text style={styles.bold}>{latest}</Text>
-              </Text>
-              <Text style={styles.label}>
-                Current version: <Text style={styles.bold}>{currentVersion}</Text>
-              </Text>
-
-              <View style={styles.actionsRow}>
-                <TouchableOpacity style={[styles.btn, styles.cancelBtn]} onPress={onLater}>
-                  <Text style={styles.btnText}>Later</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={[styles.btn, styles.updateBtn]} onPress={onUpdateNow}>
-                  <Text style={styles.btnText}>Update Now</Text>
-                </TouchableOpacity>
-              </View>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <Text style={styles.text}>Checking for updates...</Text>
             </>
           ) : (
             <>
-              <Text style={styles.title}>Downloading Update</Text>
-              <Text style={{ marginBottom: 12 }}>{progress}%</Text>
+              <Text style={styles.text}>
+                A new version ({latestVersion}) is available.
+              </Text>
 
-              {Platform.OS === "android" ? (
-                <ProgressBarAndroid styleAttr="Horizontal" indeterminate={false} progress={progress / 100} />
+              {isDownloading ? (
+                <>
+                  <Text style={[styles.text, { marginVertical: 8 }]}>
+                    Downloading: {Math.round(progress)}%
+                  </Text>
+                  <ProgressBar
+                    progress={progress / 100}
+                    width={200}
+                    color="#007AFF"
+                  />
+                </>
               ) : (
-                <ProgressViewIOS progress={progress / 100} />
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={[styles.button, styles.updateBtn]}
+                    onPress={onUpdateNow}
+                  >
+                    <Text style={styles.buttonText}>Update Now</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.button, styles.laterBtn]}
+                    onPress={onLater}
+                  >
+                    <Text style={styles.buttonText}>Later</Text>
+                  </TouchableOpacity>
+                </View>
               )}
-
-              <View style={{ height: 18 }} />
-
-              <TouchableOpacity style={[styles.btn, styles.cancelBtn]} onPress={onCancelDownload}>
-                <Text style={styles.btnText}>Cancel</Text>
-              </TouchableOpacity>
             </>
           )}
         </View>
@@ -75,25 +78,52 @@ export default function UpdateModal({
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
+  overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
+    backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
     alignItems: "center",
   },
-  box: {
-    width: "86%",
+  container: {
     backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 18,
+    padding: 20,
+    borderRadius: 16,
+    width: "85%",
+    alignItems: "center",
+    elevation: 5,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  text: {
+    fontSize: 14,
+    textAlign: "center",
+    marginVertical: 4,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    marginTop: 16,
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    marginHorizontal: 6,
+    borderRadius: 8,
     alignItems: "center",
   },
-  title: { fontSize: 20, fontWeight: "700", marginBottom: 12 },
-  label: { fontSize: 15, marginBottom: 6 },
-  bold: { fontWeight: "700" },
-  actionsRow: { flexDirection: "row", marginTop: 14, width: "100%", justifyContent: "space-between" },
-  btn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: "center", marginHorizontal: 6 },
-  cancelBtn: { backgroundColor: "#999" },
-  updateBtn: { backgroundColor: "#007AFF" },
-  btnText: { color: "#fff", fontWeight: "700" },
+  updateBtn: {
+    backgroundColor: "#007AFF",
+  },
+  laterBtn: {
+    backgroundColor: "#888",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 });
