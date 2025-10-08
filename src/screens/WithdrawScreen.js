@@ -225,28 +225,37 @@ export default function WithdrawScreen() {
       )}
 
       {/* Source Account */}
-      <Text style={styles.label}>Source Account *</Text>
-      <TextInput
-        style={styles.input}
-        value={source?.name || ''}
-        onChangeText={(text) => {
-          setSource({ name: text });
-          setFilteredSource(accounts.filter((a) => a.name.toLowerCase().includes(text.toLowerCase())));
-        }}
-      />
-      {filteredSource.length > 0 && renderSuggestions(filteredSource, setSource, setFilteredSource)}
+<Text style={styles.label}>Source Account *</Text>
+<TextInput
+  style={styles.input}
+  value={source?.name || ''}
+  onChangeText={(text) => {
+    setSource({ name: text });
+    if (!text.trim()) {
+      setFilteredSource([]);
+      return;
+    }
+    setFilteredSource(accounts.filter((a) => a.name.toLowerCase().includes(text.toLowerCase())));
+  }}
+/>
+{filteredSource.length > 0 && renderSuggestions(filteredSource, setSource, setFilteredSource)}
 
-      {/* Destination Account */}
-      <Text style={styles.label}>Destination Account</Text>
-      <TextInput
-        style={styles.input}
-        value={destination?.name || ''}
-        onChangeText={(text) => {
-          setDestination({ name: text });
-          setFilteredDest(accounts.filter((a) => a.name.toLowerCase().includes(text.toLowerCase())));
-        }}
-      />
-      {filteredDest.length > 0 && renderSuggestions(filteredDest, setDestination, setFilteredDest)}
+{/* Destination Account */}
+<Text style={styles.label}>Destination Account</Text>
+<TextInput
+  style={styles.input}
+  value={destination?.name || ''}
+  onChangeText={(text) => {
+    setDestination({ name: text });
+    if (!text.trim()) {
+      setFilteredDest([]);
+      return;
+    }
+    setFilteredDest(accounts.filter((a) => a.name.toLowerCase().includes(text.toLowerCase())));
+  }}
+/>
+{filteredDest.length > 0 && renderSuggestions(filteredDest, setDestination, setFilteredDest)}
+
 
       {/* Category */}
       <Text style={styles.label}>Category</Text>
@@ -255,6 +264,10 @@ export default function WithdrawScreen() {
         value={category}
         onChangeText={(text) => {
           setCategory(text);
+          if (!text.trim()) {
+      setFilteredCategories([]);
+      return;
+    }
           setFilteredCategories(categories.filter((c) => c.toLowerCase().includes(text.toLowerCase())));
         }}
       />

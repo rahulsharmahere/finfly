@@ -28,17 +28,20 @@ export default function useAppUpdater(currentVersion = "1.0.0") {
       const apkAsset = release.assets?.find(a => a.name.endsWith(".apk"));
       if (!apkAsset) console.warn("⚠️ No APK asset found in release");
 
-      if (semver.gt(latestName, currentVersion) || force) {
+      if (semver.gt(latestName, currentVersion)) {
         setUpdateAvailable(true);
         setLatestVersion(latestName);
         if (apkAsset) setApkUrl(apkAsset.browser_download_url);
         console.log("✅ APK URL set:", apkAsset?.browser_download_url);
+      } else if (force) {
+        // When manually checking and already up to date
+        alert("✅ You are already on the latest version.");
       } else {
-        setUpdateAvailable(false);
         console.log("👍 App is up to date.");
       }
     } catch (err) {
       console.error("❌ Update check failed:", err);
+      if (force) alert("❌ Failed to check for updates. Please try again later.");
     } finally {
       setIsChecking(false);
     }

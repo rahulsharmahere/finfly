@@ -235,53 +235,71 @@ export default function TransferScreen() {
 
       {/* Source and Destination Accounts */}
       <Text style={styles.label}>Source Account *</Text>
-      <TextInput
-        style={styles.input}
-        value={source?.name || ''}
-        onChangeText={(text) => {
-          setSource({ id: '', name: text });
-          const filtered = validSourceAccounts.filter((a) =>
-            a.name.toLowerCase().includes(text.toLowerCase())
-          );
-          setFilteredSource(filtered);
-        }}
-      />
-      {renderSuggestionsPlain(filteredSource, (val) => {
-        setSource({ id: val.id, name: val.name });
-        setFilteredSource([]);
-      })}
+<TextInput
+  style={styles.input}
+  value={source?.name || ''}
+  onChangeText={(text) => {
+    setSource({ id: '', name: text });
+    if (!text.trim()) {
+      setFilteredSource([]);
+      return;
+    }
+    const filtered = validSourceAccounts.filter((a) =>
+      a.name.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredSource(filtered);
+  }}
+/>
+{renderSuggestionsPlain(filteredSource, (val) => {
+  setSource({ id: val.id, name: val.name });
+  setFilteredSource([]);
+})}
+
 
       <Text style={styles.label}>Destination Account *</Text>
-      <TextInput
-        style={styles.input}
-        value={destination?.name || ''}
-        onChangeText={(text) => {
-          setDestination({ id: '', name: text });
-          const filtered = validDestinationAccounts.filter((a) =>
-            a.name.toLowerCase().includes(text.toLowerCase())
-          );
-          setFilteredDest(filtered);
-        }}
-      />
-      {renderSuggestionsPlain(filteredDest, (val) => {
-        setDestination({ id: val.id, name: val.name });
-        setFilteredDest([]);
-      })}
+<TextInput
+  style={styles.input}
+  value={destination?.name || ''}
+  onChangeText={(text) => {
+    setDestination({ id: '', name: text });
+    if (!text.trim()) {
+      setFilteredDest([]);
+      return;
+    }
+    const filtered = validDestinationAccounts.filter((a) =>
+      a.name.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredDest(filtered);
+  }}
+/>
+{renderSuggestionsPlain(filteredDest, (val) => {
+  setDestination({ id: val.id, name: val.name });
+  setFilteredDest([]);
+})}
+
 
       {/* Other fields */}
       <Text style={styles.label}>Category</Text>
-      <TextInput
-        style={styles.input}
-        value={category}
-        onChangeText={(text) => {
-          setCategory(text);
-          setFilteredCategories(categories.filter((c) => c.toLowerCase().includes(text.toLowerCase())));
-        }}
-      />
-      {filteredCategories.length > 0 &&
-        renderSuggestionsPlain(filteredCategories.map((c, i) => ({ id: i.toString(), name: c })), (val) =>
-          setCategory(val.name)
-        )}
+<TextInput
+  style={styles.input}
+  value={category}
+  onChangeText={(text) => {
+    setCategory(text);
+    if (!text.trim()) {
+      setFilteredCategories([]);
+      return;
+    }
+    setFilteredCategories(
+      categories.filter((c) => c.toLowerCase().includes(text.toLowerCase()))
+    );
+  }}
+/>
+{filteredCategories.length > 0 &&
+  renderSuggestionsPlain(
+    filteredCategories.map((c, i) => ({ id: i.toString(), name: c })),
+    (val) => setCategory(val.name)
+  )}
+
 
       <Text style={styles.label}>Budget</Text>
       <TextInput style={styles.input} value={budget} onChangeText={setBudget} />
@@ -290,27 +308,34 @@ export default function TransferScreen() {
       <TextInput style={styles.input} value={bill} onChangeText={setBill} />
 
       <Text style={styles.label}>Tags (comma separated)</Text>
-      <TextInput
-        style={styles.input}
-        value={tags}
-        onChangeText={(text) => {
-          setTags(text);
-          if (!text) return setFilteredTags([]);
-          const lastTag = text.split(',').pop().trim().toLowerCase();
-          if (lastTag) {
-            setFilteredTags(tagsList.filter((tag) => tag.toLowerCase().includes(lastTag)));
-          } else {
-            setFilteredTags([]);
-          }
-        }}
-      />
-      {filteredTags.length > 0 &&
-        renderSuggestionsPlain(filteredTags.map((t, i) => ({ id: i.toString(), name: t })), (val) => {
-          const tagArray = tags.split(',').map((t) => t.trim());
-          tagArray[tagArray.length - 1] = val.name;
-          setTags(tagArray.join(', ') + ', ');
-          setFilteredTags([]);
-        })}
+<TextInput
+  style={styles.input}
+  value={tags}
+  onChangeText={(text) => {
+    setTags(text);
+    if (!text.trim()) {
+      setFilteredTags([]);
+      return;
+    }
+    const lastTag = text.split(',').pop().trim().toLowerCase();
+    if (lastTag) {
+      setFilteredTags(tagsList.filter((tag) => tag.toLowerCase().includes(lastTag)));
+    } else {
+      setFilteredTags([]);
+    }
+  }}
+/>
+{filteredTags.length > 0 &&
+  renderSuggestionsPlain(
+    filteredTags.map((t, i) => ({ id: i.toString(), name: t })),
+    (val) => {
+      const tagArray = tags.split(',').map((t) => t.trim());
+      tagArray[tagArray.length - 1] = val.name;
+      setTags(tagArray.join(', ') + ', ');
+      setFilteredTags([]);
+    }
+  )}
+
 
       <Text style={styles.label}>Notes</Text>
       <TextInput style={styles.input} value={notes} onChangeText={setNotes} multiline numberOfLines={3} />

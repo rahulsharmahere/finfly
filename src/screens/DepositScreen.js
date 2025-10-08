@@ -219,9 +219,15 @@ export default function DepositScreen() {
         value={source?.name || ''}
         onChangeText={(text) => {
           setSource({ name: text });
-          setFilteredSource(validAccounts.filter((a) =>
-            a.name.toLowerCase().includes(text.toLowerCase())
-          ));
+          if (text.trim().length > 0) {
+            setFilteredSource(
+              validAccounts.filter((a) =>
+                a.name.toLowerCase().includes(text.toLowerCase())
+              )
+            );
+          } else {
+            setFilteredSource([]);
+          }
         }}
       />
       {filteredSource.length > 0 && renderSuggestions(filteredSource, setSource, setFilteredSource)}
@@ -232,9 +238,15 @@ export default function DepositScreen() {
         value={destination?.name || ''}
         onChangeText={(text) => {
           setDestination({ name: text });
-          setFilteredDest(validAccounts.filter((a) =>
-            a.name.toLowerCase().includes(text.toLowerCase())
-          ));
+          if (text.trim().length > 0) {
+            setFilteredDest(
+              validAccounts.filter((a) =>
+                a.name.toLowerCase().includes(text.toLowerCase())
+              )
+            );
+          } else {
+            setFilteredDest([]);
+          }
         }}
       />
       {filteredDest.length > 0 && renderSuggestions(filteredDest, setDestination, setFilteredDest)}
@@ -245,15 +257,19 @@ export default function DepositScreen() {
         value={category}
         onChangeText={(text) => {
           setCategory(text);
-          setFilteredCategories(categories.filter((c) => c.toLowerCase().includes(text.toLowerCase())));
+          if (text.trim().length > 0) {
+            setFilteredCategories(
+              categories
+                .filter((c) => c.toLowerCase().includes(text.toLowerCase()))
+                .map((c, i) => ({ name: c, id: i.toString() }))
+            );
+          } else {
+            setFilteredCategories([]);
+          }
         }}
       />
       {filteredCategories.length > 0 &&
-        renderSuggestions(
-          filteredCategories.map((c, i) => ({ name: c, id: i.toString() })),
-          (val) => setCategory(val.name),
-          setFilteredCategories
-        )}
+        renderSuggestions(filteredCategories, (val) => setCategory(val.name), setFilteredCategories)}
 
       <Text style={styles.label}>Budget</Text>
       <TextInput style={styles.input} value={budget} onChangeText={setBudget} />
@@ -267,16 +283,16 @@ export default function DepositScreen() {
         value={tags}
         onChangeText={(text) => {
           setTags(text);
-          if (!text) {
+          if (!text.trim()) {
             setFilteredTags([]);
             return;
           }
           const tagArray = text.split(',').map((t) => t.trim());
           const lastTag = tagArray[tagArray.length - 1]?.toLowerCase() || '';
           if (lastTag.length > 0) {
-            setFilteredTags(tagsList.filter((tag) =>
-              tag.toLowerCase().includes(lastTag)
-            ));
+            setFilteredTags(
+              tagsList.filter((tag) => tag.toLowerCase().includes(lastTag))
+            );
           } else {
             setFilteredTags([]);
           }
@@ -304,7 +320,13 @@ export default function DepositScreen() {
       )}
 
       <Text style={styles.label}>Notes</Text>
-      <TextInput style={styles.input} value={notes} onChangeText={setNotes} multiline numberOfLines={3} />
+      <TextInput
+        style={styles.input}
+        value={notes}
+        onChangeText={setNotes}
+        multiline
+        numberOfLines={3}
+      />
 
       <View style={styles.buttonContainer}>
         <Button title="Submit" onPress={onSubmit} />

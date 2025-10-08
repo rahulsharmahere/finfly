@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -21,9 +21,8 @@ import ThreeDotMenu from "../components/ThreeDotMenu";
 export default function AddLiabilitiesScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const account = route.params?.account || null; // If editing, account is passed
-  const onSaved = route.params?.onSaved; // Callback to refresh list
-
+  const account = route.params?.account || null;
+  const onSaved = route.params?.onSaved;
   const isEdit = !!account;
 
   const [name, setName] = useState(account?.name || "");
@@ -37,7 +36,7 @@ export default function AddLiabilitiesScreen() {
     account?.opening_balance_date ? new Date(account.opening_balance_date) : new Date()
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [interest, setInterest] = useState(account?.interest?.toString() || "");
+  const [interest, setInterest] = useState(account?.interest?.toString() || "0");
   const [interestPeriod, setInterestPeriod] = useState(account?.interest_period || "monthly");
 
   const handleSave = async () => {
@@ -46,6 +45,7 @@ export default function AddLiabilitiesScreen() {
       const openingBalance =
         liabilityDirection === "debit" ? -Math.abs(numericAmount) : Math.abs(numericAmount);
 
+      // ✅ Always include interest fields as strings
       const payload = {
         name: name || "Liability @" + new Date().toISOString(),
         type: "liability",
@@ -54,25 +54,22 @@ export default function AddLiabilitiesScreen() {
         opening_balance_date: moment(startDate).format("YYYY-MM-DD"),
         liability_type: liabilityType,
         liability_direction: liabilityDirection,
+        interest: interest?.toString() || "0",
+        interest_period: interestPeriod || "monthly",
       };
-
-      if (interest) {
-        payload.interest = parseFloat(interest);
-        payload.interest_period = interestPeriod || "monthly";
-      }
 
       const config = await getAuthConfig();
 
       if (isEdit) {
-        // Firefly III requires POST for editing with /accounts/{id}/save
-        await axios.post(`${config.baseURL}/accounts/${account.id}/save`, payload, config);
+        // ✅ PUT is correct for updates
+        await axios.put(`${config.baseURL}/accounts/${account.id}`, payload, config);
         Alert.alert("Success", "Liability updated successfully!");
       } else {
         await axios.post(`${config.baseURL}/accounts`, payload, config);
         Alert.alert("Success", "Liability created successfully!");
       }
 
-      if (onSaved) onSaved(); // Refresh liabilities list
+      if (onSaved) onSaved();
       navigation.goBack();
     } catch (error) {
       console.error("❌ Error saving liability:", error.response?.data || error.message);
@@ -97,7 +94,7 @@ export default function AddLiabilitiesScreen() {
               const config = await getAuthConfig();
               await axios.delete(`${config.baseURL}/accounts/${account.id}`, config);
               Alert.alert("Deleted", "Liability deleted successfully!");
-              if (onSaved) onSaved(); // Refresh list
+              if (onSaved) onSaved();
               navigation.goBack();
             } catch (error) {
               console.error("❌ Error deleting liability:", error.response?.data || error.message);
@@ -153,7 +150,12 @@ export default function AddLiabilitiesScreen() {
         </View>
 
         <Text style={styles.label}>Amount *</Text>
-        <TextInput style={styles.input} value={amount} onChangeText={setAmount} keyboardType="numeric" />
+        <TextInput
+          style={styles.input}
+          value={amount}
+          onChangeText={setAmount}
+          keyboardType="numeric"
+        />
 
         <Text style={styles.label}>Start Date</Text>
         <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
@@ -171,10 +173,15 @@ export default function AddLiabilitiesScreen() {
           />
         )}
 
-        <Text style={styles.label}>Interest</Text>
-        <TextInput style={styles.input} value={interest} onChangeText={setInterest} keyboardType="numeric" />
+        <Text style={styles.label}>Interest *</Text>
+        <TextInput
+          style={styles.input}
+          value={interest}
+          onChangeText={setInterest}
+          keyboardType="numeric"
+        />
 
-        <Text style={styles.label}>Interest Period</Text>
+        <Text style={styles.label}>Interest Period *</Text>
         <View style={styles.pickerContainer}>
           <Picker selectedValue={interestPeriod} onValueChange={setInterestPeriod} style={styles.picker}>
             <Picker.Item label="Daily" value="daily" />
@@ -209,15 +216,42 @@ const styles = StyleSheet.create({
   },
   headerIconWrapper: { width: 40, alignItems: "flex-start" },
   headerIcon: { color: "#fff", fontSize: 22 },
-  headerTitle: { flex: 1, textAlign: "center", color: "#fff", fontSize: 20, fontWeight: "bold" },
+  headerTitle: {
+    flex: 1,
+    textAlign: "center",
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
   container: { flex: 1, padding: 20 },
   label: { fontSize: 16, fontWeight: "600", marginBottom: 5 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 10, marginBottom: 15 },
-  pickerContainer: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, marginBottom: 15 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    marginBottom: 15,
+  },
   picker: { height: 50, width: "100%" },
-  dateButton: { padding: 12, backgroundColor: "#f0f0f0", borderRadius: 8, marginBottom: 15 },
+  dateButton: {
+    padding: 12,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    marginBottom: 15,
+  },
   dateText: { fontSize: 16 },
-  button: { backgroundColor: "#2196F3", padding: 15, borderRadius: 8, marginBottom: 10 },
+  button: {
+    backgroundColor: "#2196F3",
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
   deleteButton: { backgroundColor: "#FF5722" },
   buttonText: { color: "white", textAlign: "center", fontWeight: "bold" },
 });
